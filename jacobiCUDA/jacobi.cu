@@ -21,7 +21,13 @@ __global__ void d_jacobi(double* d_matrix, double* d_matrix_new, double* d_f, in
                                     d_f[idx]);
         atomicAdd(dif_out,d_matrix_new[idx]-d_matrix[idx])*(d_matrix_new[idx]-d_matrix[idx]);
     }
-    __syncthreads();
+    cudaDeviceSynchronize();
+
+    //Update d_matrix to be the new matrix
+    d_matrix = d_matrix_new;
+    cudaDeviceSynchronize();
+
+    cudacudaMemcpy(dif, dif_out, cudaDeviceToHost);
 }
 
 
@@ -52,18 +58,18 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
     end_time = omp_get_wtime();
     
     int count = 0;
-
-    while(count < iterations && dif_out > 1e-5){
+    double dif = 100;
+    while(count < iterations && dif > 1e-5){
         // Run Jacobi simulation on GPUs
         d_jacobi<<<NB,TPB>>>(d_matrix,d_matrix_new,d_f,N,iterations,start_time);
         
+        //Update the necessary variables 
         end_time = omp_get_wtime(); 
-        
         count++;
-        
         printf("Final rounds: %.4f seconds\n", end_time - start_time);
-
-        
     }
+
+    // Transfer Result matrix back to host
+    cudacudaMemcpy(matrix, d_matrix, cudaDeviceToHost);
     return matrix;
 }
