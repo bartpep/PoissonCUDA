@@ -6,6 +6,9 @@
 #include <omp.h>
 #include <iostream>
 #include <fstream>
+#include <string.h>
+
+using namespace std;
 
 // Define auxiliary functions
 #include "auxiliaryFunctions/initial_functions.h"
@@ -31,12 +34,12 @@ void vtk_wrapper(double ***matrix, int N){
 }
 
 
-// Set parameters for the simulation
-int iterations = 10000;
-int N = 10;
-double difference = .0005;
-
 int main(int argv, char *argc[]){
+    int N = atoi(argc[1]);
+    int iterations = atoi(argc[2]);
+    printf("%s", argc[3]);
+    double difference = stod(argc[3]);
+
      // Initialize the matrixes at starting values    
     //printf("Main executes up to initial conditions\n");
     // Update the 3d_malloc function as this will create a solid block of data that can be copied in cuda
@@ -62,7 +65,7 @@ int main(int argv, char *argc[]){
     int thread_num = 1;
     double MLUPS = (N-2)*(N-2)*(N-2) *iterations / time;
     
-    std::ofstream myfile;
+    ofstream myfile;
     myfile.open("./results/sequential.csv");
     myfile << N << ", " <<  time << ", " << iter << ", " << MLUPS << ", " << thread_num <<"\n";
     myfile.close();

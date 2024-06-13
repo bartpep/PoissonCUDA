@@ -1,6 +1,7 @@
 jacobi*
 vtk
 results
+credential_github
 # Prerequisites
 *.d
 
