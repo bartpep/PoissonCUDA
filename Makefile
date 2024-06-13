@@ -1,69 +1,49 @@
 # Variables
+NVCC = nvc++
 C = g++
-NVCC = nvcc
-CFLAGS_MP = -ftree-parallelize-loops=4
-NVCC_FLAGS = 
+CFLAGS = -g  -fast -Msafeptr -Minfo -acc -mp=gpu -gpu=pinned -gpu=lineinfo -gpu=cc90 -cuda -mp=noautopar
+
 TARGET_SEQ = 	jacobi_seq
-TARGET_MP = 	jacobi_open
+TARGET_OPEN = 	jacobi_open
 TARGET_CUDA = 	jacobi_cuda
 
-SRCS_SEQ =  main.cpp 	./jacobiSequential/jacobi.cpp 	./auxiliaryFunctions/print.cpp ./auxiliaryFunctions/initial_functions.cpp
-SRCS_MP = 	main.cpp 	./jacobiOpen/jacobi.cpp 		./auxiliaryFunctions/print.cpp ./auxiliaryFunctions/initial_functions.cpp
-SRCS_CUDA = main.cpp 	./jacobiCUDA/jacobi.cu 			./auxiliaryFunctions/print.cpp ./auxiliaryFunctions/initial_functions.cpp
+SRCS_SEQ =  	main.cpp 		./jacobiSequential/jacobi.cpp 	$(wildcard ./auxiliaryFunctions/*.cpp) 
+SRCS_OPEN = 	main.cpp 		./jacobiOpen/jacobi.cpp 		$(wildcard ./auxiliaryFunctions/*.cpp) 
+SRCS_CUDA_CU = 	main_cuda.cu 	./jacobiCUDA/jacobi.cu 			$(wildcard ./auxiliaryFunctions/*.cu) 
+SRCS_CUDA_CPP = 												$(wildcard ./auxiliaryFunctions/*.cpp) 
+
 
 OBJS_SEQ = 	$(SRCS_SEQ:.cpp=.o)
-OBJS_MP = 	$(SRCS_MP:.cpp=.o)
-OBJS_CUDA = $(SRCS_CUDA:.cpp=.o)
-OBJS_CUDA = $(SRCS_CUDA:.cpp=.o)
+OBJS_OPEN = $(SRCS_MP:.cpp=.o)
+OBJS_CUDA = $(SRCS_CUDA_CPP:.cpp=.o) $(SRCS_CUDA_CU:.cu=.o) 
+
 
 INCL_AUX = 	auxiliaryFunctions
 INCL_S = 	jacobiSequential
-INCL_MP = 	jacobiOpen
+INCL_OPEN = jacobiOpen
 INCL_C = 	jacobiCUDA
 
-# Targets
-all: $(TARGET_SEQ)
-
-# Compile Sequential version
-seq: $(TARGET_SEQ)
-$(TARGET_SEQ): $(OBJS_SEQ)
-	$(C) $(CFLAGS) -o $(TARGET_SEQ) $(OBJS_SEQ) -I $(INCL_AUX) -I $(INCL_S) -fopenmp
-
-%.o: %.cpp
-	$(C) $(CFLAGS) -c $< -o $@ 
-
-
-
-clean_seq:
-	rm -f $(OBJS_SEQ) $(TARGET_SEQ)
-
-# Compile Jacobi OpenMP version
-open:  $(TARGET_MP)
-$(TARGET_MP): $(OBJS_MP)
-	$(C) $(CFLAGS_MP) -o $(TARGET_MP) $(OBJS_MP) -I $(INCL_AUX) -I $(INCL_MP) -MP
-
-%.o: %.cpp
-	$(C) $(CFLAGS) -c $< -o $@ 
-
-clean_open:
-	rm -f $(OBJS_MP) $(TARGET_MP)
-
+all: jacobi_cuda jacobi_open
 # Compile Jacobi cuda version
-cuda:  $(TARGET_CUDA)
+jacobi_cuda: $(TARGET_CUDA)
 $(TARGET_CUDA): $(OBJS_CUDA)
-	$(NVCC) $(CFLAGS) -o $(TARGET_CUDA) $(OBJS_CUDA) -I $(INCL_AUX) -I $(INCL_CUDA) CUDA
-	
+	$(NVCC) $(CFLAGS) -o $@ $(OBJS_CUDA)  -I $(INCL_AUX) -I $(INCL_C)
+
 %.o: %.cu
-	$(NVCC) $(NVCC_FLAGS) -c $< -o $@ 
+	$(NVCC) $(CFLAGS) -c $< -o $@ -I $(INCL_AUX) -I $(INCL_C)
 
 %.o: %.cpp
-	$(C) $(CFLAGS) -c $< -o $@ 
+	$(NVCC) $(CFLAGS) -c $< -o $@ -I $(INCL_AUX)
+
+jacobi_open: $(TARGET_OPEN)
+$(TARGET_OPEN): $(OBJS_OPEN)
+	$(NVCC) $(CFLAGS) -o $@ $(OBJS_OPEN)  -I $(INCL_AUX) -I $(INCL_OPEN)
 
 
 
-clean_cuda:
-	rm -f $(OBJS_CUDA) $(TARGET_CUDA)
 
+clean:
+	rm -f jacobi_cuda *.o ./auxiliaryFunctions/*.o ./jacobiCUDA/*.o ./jacobiOpen/*.o
 
-
-
+run_cuda:
+	./jacobi_cuda 6 6 6

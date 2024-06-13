@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.cu": "cuda-cpp",
         "iostream": "cpp",
         "ostream": "cpp",
         "cctype": "cpp",
@@ -48,6 +49,7 @@
         "utility": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "algorithm": "cpp"
     }
 }

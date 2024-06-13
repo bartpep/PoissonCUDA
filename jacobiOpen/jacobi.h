@@ -1,1 +1,1 @@
-double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int iterations);
+double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int iterations, double difference);

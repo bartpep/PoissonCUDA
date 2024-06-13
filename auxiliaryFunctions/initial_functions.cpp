@@ -4,12 +4,13 @@
 #include <math.h>
 
 #include "initial_functions.h"
+#include "alloc3d.h"
+
 
 
 // Create and fill the initial conditions
-double*** initial_conditions(int N){
+double*** initial_conditions(double ***matrix, int N, int M, int K){
     //printf("Initial conditions has been called succesfully.\nN = %d\n", N);
-    double*** matrix = allocate_matrix(N);
     int n_bound = N-1;
 
     // define walls
@@ -28,10 +29,8 @@ double*** initial_conditions(int N){
 }
 
 // Define f matrix
-double*** f_matrix(int N){
+double*** f_matrix(double ***matrix, int N, int M, int K){
     //define heater (First move 1 to the left to create 0-2 frame, then stretch by N/2: (heater cordinates + 1) * N/2)
-    double ***matrix = allocate_matrix(N);
-
     float delta = 2.0/N;
     delta = delta*delta;
 
@@ -44,39 +43,6 @@ double*** f_matrix(int N){
     }
     return matrix;
 }
-
-// Dynamically allocated 3D matrix memory of size (N,N,N) 
-double*** allocate_matrix(int N){
-    // Allocate first memory line
-    //printf("Allocation function has been called successfully\n");
-    double ***allocation_matrix = (double ***)malloc(N * sizeof(double **));
-    check_matrix_memory_allocation(allocation_matrix, 1);
-    //printf("allocation has happened\n");
-    
-
-    for(int i = 0; i < N; i++){
-        allocation_matrix[i] = (double **) malloc(N * sizeof(double *));
-        check_matrix_memory_allocation(allocation_matrix[i], 2);
-
-        for(int j = 0; j < N; j++){
-            allocation_matrix[i][j] = (double*) malloc(N * sizeof(double));
-            check_matrix_memory_allocation(allocation_matrix[i][j], 3);
-
-        }
-    }
-    printf("Allocation has run appropriately\n");
-    return allocation_matrix;
-}
-
-// Ensure that dynamically allocated memory does not return Null
-int check_matrix_memory_allocation(void* ptr, int level){     
-    if (ptr == NULL) {
-        printf("Memory allocation failed at dimension %d\n", level);  
-        return 1;
-    }
-    return 0;
-}
-
 // Print function to check matrix results
 void print_matrix(double*** matrix, int N){ 
 
@@ -90,4 +56,3 @@ void print_matrix(double*** matrix, int N){
             std::cout << std::endl;
     }
 }
-
