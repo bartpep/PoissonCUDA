@@ -29,17 +29,19 @@ jacobi_cuda: $(TARGET_CUDA)
 $(TARGET_CUDA): $(OBJS_CUDA)
 	$(NVCC) $(CFLAGS) -o $@ $(OBJS_CUDA)  -I $(INCL_AUX) -I $(INCL_C)
 
+jacobi_open: $(TARGET_OPEN)
+$(TARGET_OPEN): $(OBJS_OPEN)
+	$(NVCC) $(CFLAGS) -o $@ $(OBJS_OPEN)  -I $(INCL_AUX) -I $(INCL_OPEN)
+
+jacobi_seq: $(TARGET_SEQ)
+$(TARGET_SEQ): $(OBJS_SEQ)
+	$(NVCC) $(CFLAGS) -o $@ $(OBJS_SEQ)  -I $(INCL_AUX) -I $(INCL_OPEN)
+
 %.o: %.cu
 	$(NVCC) $(CFLAGS) -c $< -o $@ -I $(INCL_AUX) -I $(INCL_C)
 
 %.o: %.cpp
 	$(NVCC) $(CFLAGS) -c $< -o $@ -I $(INCL_AUX)
-
-jacobi_open: $(TARGET_OPEN)
-$(TARGET_OPEN): $(OBJS_OPEN)
-	$(NVCC) $(CFLAGS) -o $@ $(OBJS_OPEN)  -I $(INCL_AUX) -I $(INCL_OPEN)
-
-
 
 
 clean:

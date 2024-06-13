@@ -4,6 +4,8 @@
 #include <math.h>
 #include <limits.h>
 #include <omp.h>
+#include <iostream>
+#include <fstream>
 
 // Define auxiliary functions
 #include "auxiliaryFunctions/initial_functions.h"
@@ -12,30 +14,16 @@
 
 
 //Defines which version to use
-#ifdef CUDA
-    #include "jacobiCUDA/jacobi.cuh"
-#elif MP
+#ifdef MP
     #include "jacobiOpen/jacobi.h"
 #else 
     #include "jacobiSequential/jacobi.h"
 #endif
 
-// Wrapper function for Jacobi depending on type being run
-double ***jacobi_wrapper(double ***matrix, double ***matrix_out, double ***f, int N, int iterations, double dif_threshold, int NB, int TPB){
-    #ifdef CUDA
-        matrix = jacobi(matrix, matrix_out,f,N, iterations, NB,TPB);
-    #else
-        matrix = jacobi(matrix, matrix_out,f,N, iterations,dif_threshold);
-    #endif
-
-    return matrix;
-}
 
 // VTK wrapper function
 void vtk_wrapper(double ***matrix, int N){
-    #ifdef CUDA
-        print_vtk("vtk/cuda.vtk",N,matrix);
-    #elif MP
+    #ifdef MP
         print_vtk("vtk/mp.vtk",N,matrix);
     #else
         print_vtk("vtk/seq.vtk",N,matrix);
@@ -44,27 +32,41 @@ void vtk_wrapper(double ***matrix, int N){
 
 
 // Set parameters for the simulation
-int iterations = 400;
-int N = 250;
-int TPB  = 32;
-int NB = 10;
-double difference = .00001;
+int iterations = 10000;
+int N = 10;
+double difference = .0005;
 
 int main(int argv, char *argc[]){
      // Initialize the matrixes at starting values    
     //printf("Main executes up to initial conditions\n");
     // Update the 3d_malloc function as this will create a solid block of data that can be copied in cuda
-    double*** matrix = initial_conditions(N);
+    double*** matrix = malloc_3d(N,N,N);
     double*** matrix_out = malloc_3d(N,N,N);
-    double*** f = f_matrix(N);
+    double*** f = malloc_3d(N,N,N);
+    
+    f = f_matrix(f,N,N,N);
+    matrix = initial_conditions(matrix, N,N,N);
     
     //Run the Jacobi
-    matrix = jacobi_wrapper(matrix, matrix_out,f,N,iterations,difference,NB,TPB);
-    
+    int iter = 0;
+    int *p_iter = &iter;
+    double start = omp_get_wtime();
+    matrix = jacobi(matrix, matrix_out,f,N,iterations,p_iter,difference);
+    double end = omp_get_wtime();
     
     //print final matrix
     vtk_wrapper(matrix,N);
- 
+    
+    //Calculate KPI
+    double time = end - start;
+    int thread_num = 1;
+    double MLUPS = (N-2)*(N-2)*(N-2) *iterations / time;
+    
+    std::ofstream myfile;
+    myfile.open("./results/sequential.csv");
+    myfile << N << ", " <<  time << ", " << iter << ", " << MLUPS << ", " << thread_num <<"\n";
+    myfile.close();
+
 
    return 0;
 }

@@ -6,7 +6,7 @@
 
 
 // Transfer data from device to host
-double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int iterations, double difference ){
+double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int iterations, int *p_iter,double difference ){
     printf("Starting sequential  version\n");
     // Multiplication is easier than division
     float dec = 1.0/6;
@@ -52,7 +52,7 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
         // Update test values for the while statement
         dif = sqrt(dif / (n_dif*n_dif*n_dif));
         rounds++;
-        printf("%f, %f \n", dif, difference);
+
         if (rounds % 50 == 0) {
             end_time = omp_get_wtime();
             printf("Round %d diff: %.4f after %.4f seconds\n", rounds, dif, end_time - start_time);  
@@ -61,6 +61,7 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
 
     // print final and return matrix 
     end_time = omp_get_wtime();
-    printf("Round %d diff: %.5f after %.0f seconds\n", rounds, dif, end_time - start_time);        
+    printf("Round %d diff: %.5f after %.0f seconds\n", rounds, dif, end_time - start_time);
+    *p_iter = rounds;
     return matrix;
 }

@@ -1,11 +1,11 @@
-./jacobi*
-/vtk/*
-./results
+jacobi*
+vtk
+results
 # Prerequisites
 *.d
 
 # Object files
-*/*.o
+*.o
 *.ko
 *.obj
 *.elf
