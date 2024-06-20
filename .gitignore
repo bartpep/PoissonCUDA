@@ -2,6 +2,10 @@ jacobi*
 vtk
 results
 credential_github
+open 
+seq
+cuda
+cuda_mpi
 # Prerequisites
 *.d
 

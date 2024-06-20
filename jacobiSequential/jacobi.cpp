@@ -35,12 +35,11 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
                     
                     dif_t = matrix_new[i][j][k]-matrix[i][j][k];
                     dif += dif_t*dif_t;
-                    //printf("Element (%d,%d,%d) with temp = %.3f and %.3f has been successfully added\n",i,j,k, matrix_new[i][j][k], f[i][j][k]);
                 }
             }
         }
         
-
+        
         //Copy the matrix
         for(int i = 1; i <N-1;i++){
             for(int j = 1; j < N-1; j++){
@@ -51,9 +50,10 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
         }
         // Update test values for the while statement
         dif = sqrt(dif / (n_dif*n_dif*n_dif));
+
         rounds++;
 
-        if (rounds % 50 == 0) {
+        if (rounds % 500 == 0) {
             end_time = omp_get_wtime();
             printf("Round %d diff: %.4f after %.4f seconds\n", rounds, dif, end_time - start_time);  
         }  

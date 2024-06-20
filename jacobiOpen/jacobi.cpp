@@ -1,9 +1,6 @@
-
-
 #include <stdio.h>
 #include <math.h>
 #include <omp.h>
-
 #include "jacobi.h"
 
 double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int iterations,int *p_iter,double difference) {
@@ -22,10 +19,10 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
     start_time = omp_get_wtime();
 
     // Loop through all fields
-    while (rounds < iterations && dif > .00001) {
+    while (rounds < iterations && dif > difference) {
         dif = 0.0;
         
-        #pragma omp parallel reduction(+ : dif) shared(matrix, matrix_new, f, N) private(i, j, k, d)
+        #pragma omp parallel reduction(+ : dif) shared(matrix, matrix_new, f, N, dec, rounds) private(i, j, k, d)
         {
             #pragma omp for
             for (i = 1; i < n_bounds; i++) {
@@ -45,12 +42,12 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
                     }
                 }
             } // implicit barrier here
-        
+            
             // Copy the matrix
             #pragma omp for
-            for (i = 0; i < N; i++) {
-                for (j = 0; j < N; j++) {
-                    for (k = 0; k < N; k++) {
+            for (i = 1; i < n_bounds; i++) {
+                for (j = 1; j < n_bounds; j++) {
+                    for (k = 1; k < n_bounds; k++) {
                         matrix[i][j][k] = matrix_new[i][j][k];
                     }
                 }
@@ -60,7 +57,8 @@ double*** jacobi(double ***matrix, double ***matrix_new, double ***f, int N, int
         // Updates while loop
         rounds++;
         dif = sqrt(dif / (n_dif * n_dif * n_dif));
-        if (rounds % 100 == 0) {
+        
+        if (rounds % 500 == 0) {
             end_time = omp_get_wtime();
             printf("Round %d diff: %.4f after %.4f seconds\n", rounds, dif, end_time - start_time);  
         }  

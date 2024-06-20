@@ -24,21 +24,12 @@ using namespace std;
 #endif
 
 
-// VTK wrapper function
-void vtk_wrapper(double ***matrix, int N){
-    #ifdef MP
-        print_vtk("vtk/mp.vtk",N,matrix);
-    #else
-        print_vtk("vtk/seq.vtk",N,matrix);
-    #endif
-}
+int main(int argc, char *argv[]){
+    int N = atoi(argv[1]);
+    int iterations = atoi(argv[2]);
+    double difference = stod(argv[3]);
+    int mp = strcmp(argv[4] ,"MP");
 
-
-int main(int argv, char *argc[]){
-    int N = atoi(argc[1]);
-    int iterations = atoi(argc[2]);
-    printf("%s", argc[3]);
-    double difference = stod(argc[3]);
 
      // Initialize the matrixes at starting values    
     //printf("Main executes up to initial conditions\n");
@@ -49,6 +40,8 @@ int main(int argv, char *argc[]){
     
     f = f_matrix(f,N,N,N);
     matrix = initial_conditions(matrix, N,N,N);
+    matrix = initial_conditions(matrix, N,N,N);
+
     
     //Run the Jacobi
     int iter = 0;
@@ -58,7 +51,7 @@ int main(int argv, char *argc[]){
     double end = omp_get_wtime();
     
     //print final matrix
-    vtk_wrapper(matrix,N);
+    
     
     //Calculate KPI
     double time = end - start;
@@ -66,7 +59,15 @@ int main(int argv, char *argc[]){
     double MLUPS = (N-2)*(N-2)*(N-2) *iterations / time;
     
     ofstream myfile;
-    myfile.open("./results/sequential.csv");
+    if (mp == 0){
+        printf("Printed Open MP results\n");
+        myfile.open("./results/openmp.csv");
+        print_vtk("vtk/mp.vtk",N,matrix);
+    }else{
+        printf("Printed Sequential results\n");
+        myfile.open("./results/sequential.csv");
+        print_vtk("vtk/seq.vtk",N,matrix);
+    }
     myfile << N << ", " <<  time << ", " << iter << ", " << MLUPS << ", " << thread_num <<"\n";
     myfile.close();
 

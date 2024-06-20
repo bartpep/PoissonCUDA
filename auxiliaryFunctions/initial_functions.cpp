@@ -37,7 +37,7 @@ double*** f_matrix(double ***matrix, int N, int M, int K){
     for(int i = floor(0*N/2);i < floor(5*N/16);i++){
         for(int j = floor(0*N/2);j < floor(N/4);j++){
             for(int k = floor(N/6);k < floor(N/2);k++){
-                matrix[i][j][k] = delta * 200;
+                matrix[i][j][k] = delta * 2000;
             }
         }
     }
